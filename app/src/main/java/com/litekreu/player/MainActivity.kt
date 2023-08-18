@@ -4,46 +4,44 @@ import android.annotation.SuppressLint
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import com.litekreu.player.ui.theme.PlayerTheme
 
 class MainActivity : ComponentActivity() {
     val player by lazy {
-        Player(applicationContext)
+        Player(applicationContext, songsPlaylist, index)
     }
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -53,7 +51,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    PlayerContainer(player = player)
+                    PlayerContainer(player = player) // AND HERE SHIT PARAM
                 }
             }
         }
@@ -62,9 +60,10 @@ class MainActivity : ComponentActivity() {
 
 @SuppressLint("ModifierFactoryUnreferencedReceiver")
 @Composable
-fun padModifier() = Modifier.fillMaxSize()
+fun padModifier() = Modifier.fillMaxSize() // fastly using all space in container
 
-val songsPlaylist = listOf(R.raw.language)
+val songsPlaylist = listOf(R.raw.pogo, R.raw.encore)
+var index = 0
 
 @Composable
 fun PlayerContainer(modifier: Modifier = Modifier, player: Player) {
@@ -75,7 +74,7 @@ fun PlayerContainer(modifier: Modifier = Modifier, player: Player) {
             .fillMaxWidth()
     ) {
         StockImage()
-        Controls(plParam = player)
+        Controls(plParam = player) // also shit param
     }
 }
 
@@ -91,7 +90,7 @@ fun StockImage(modifier: Modifier = Modifier) {
             painter = painterResource(R.drawable.stock),
             contentDescription = null,
             modifier = Modifier
-                .padding(bottom = 30.dp)
+                .padding(bottom = 120.dp)
                 .clip(RoundedCornerShape(20.dp))
         )
     }
@@ -99,13 +98,19 @@ fun StockImage(modifier: Modifier = Modifier) {
 
 @Composable
 fun Controls(modifier: Modifier = padModifier(), plParam: Player) {
+    val mainOnClick = { if (!plParam.isPlaying()) plParam.play() else plParam.pause() }
+    var mainIcon by remember { mutableStateOf(Icons.Filled.PlayArrow) }
     Row(
         modifier = modifier
             .padding(bottom = 40.dp),
         horizontalArrangement = Arrangement.Center,
         verticalAlignment = Alignment.Bottom
     ) {
-        Button(onClick = { /*TODO*/ },
+        Button(onClick = {
+            plParam.stop()
+            index = (index - 1) % songsPlaylist.size
+            plParam.play()
+        },
             colors = ButtonDefaults.buttonColors(
                 contentColor = Color.White,
                 containerColor = Color.Transparent
@@ -113,26 +118,20 @@ fun Controls(modifier: Modifier = padModifier(), plParam: Player) {
             shape = CircleShape) {
             Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
         }
-        OutlinedButton(
-            onClick = { plParam.play() },
-            border = BorderStroke(width = 2.dp, color = Color.White),
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color.Transparent
-            )
-        ) {
-            Icon(
-                imageVector = Icons.Filled.Home, 
+        IconButton(onClick = mainOnClick) {
+            Icon(imageVector = mainIcon,
                 contentDescription = null,
-                modifier = Modifier.size(32.dp)
-            )
-            Spacer(modifier = Modifier.width(8.dp))
-            Text(text = "Sample text", fontWeight = FontWeight.Light, fontSize = 20.sp)
+                modifier = Modifier.size(48.dp))
         }
-        Button(onClick = { /*TODO*/ }, colors =
-            ButtonDefaults.buttonColors(
-                contentColor = Color.White,
-                containerColor = Color.Transparent
-            ),
+        Button(onClick = {
+            plParam.stop()
+            index = (index + 1) % songsPlaylist.size // Update index to the next song
+            plParam.play() // Play the next song
+        }, colors =
+        ButtonDefaults.buttonColors(
+            contentColor = Color.White,
+            containerColor = Color.Transparent
+        ),
             shape = CircleShape) {
             Icon(imageVector = Icons.Default.ArrowForward, contentDescription = null)
         }

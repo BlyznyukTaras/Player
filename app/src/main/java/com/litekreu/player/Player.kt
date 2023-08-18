@@ -2,13 +2,20 @@ package com.litekreu.player
 
 import android.content.Context
 import android.media.MediaPlayer
+import androidx.annotation.RawRes
+import androidx.compose.runtime.Composable
+import java.io.File
+import kotlin.random.Random
 
-class Player(private val context: Context) {
+class Player(private val context: Context, @RawRes val songsList: List<Int>, var id: Int) {
     var player: MediaPlayer? = null
     fun play() {
-        MediaPlayer.create(context, R.raw.language).apply {
-            player = this
-            start()
+        if (player != null && !player!!.isPlaying) player!!.start()
+        else {
+            MediaPlayer.create(context, songsList[index]).apply {
+                player = this
+                start()
+            }
         }
     }
     fun stop() {
@@ -16,4 +23,6 @@ class Player(private val context: Context) {
         player?.release()
         player = null
     }
+    fun pause() { player?.pause() }
+    fun isPlaying(): Boolean = player?.isPlaying ?: false
 }
