@@ -3,9 +3,6 @@ package com.litekreu.player
 import android.content.Context
 import android.media.MediaPlayer
 import androidx.annotation.RawRes
-import androidx.compose.runtime.Composable
-import java.io.File
-import kotlin.random.Random
 
 class Player(private val context: Context, @RawRes val songsList: List<Int>, var id: Int) {
     var player: MediaPlayer? = null

@@ -13,13 +13,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -62,7 +62,9 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun padModifier() = Modifier.fillMaxSize() // fastly using all space in container
 
-val songsPlaylist = listOf(R.raw.pogo, R.raw.encore)
+val songsPlaylist = listOf(R.raw.pogo, R.raw.encore) /* Hardcoded list of songs, maybe sooner or
+later gonna work with files for the sake of less loading times
+*/
 var index = 0
 
 @Composable
@@ -82,7 +84,7 @@ fun PlayerContainer(modifier: Modifier = Modifier, player: Player) {
 fun StockImage(modifier: Modifier = Modifier) {
     Box(
         contentAlignment = Alignment.Center,
-        modifier = Modifier
+        modifier = modifier
             .fillMaxHeight()
             .padding(20.dp)
     ) {
@@ -99,7 +101,12 @@ fun StockImage(modifier: Modifier = Modifier) {
 @Composable
 fun Controls(modifier: Modifier = padModifier(), plParam: Player) {
     val mainOnClick = { if (!plParam.isPlaying()) plParam.play() else plParam.pause() }
+    var hardCodedIsPlayingVar by remember { mutableStateOf(false) }
     var mainIcon by remember { mutableStateOf(Icons.Filled.PlayArrow) }
+    mainIcon = when (hardCodedIsPlayingVar) {
+        false -> Icons.Filled.PlayArrow
+        else -> Icons.Filled.Refresh
+    }
     Row(
         modifier = modifier
             .padding(bottom = 40.dp),
@@ -108,7 +115,7 @@ fun Controls(modifier: Modifier = padModifier(), plParam: Player) {
     ) {
         Button(onClick = {
             plParam.stop()
-            index = (index - 1) % songsPlaylist.size
+            index = (index - 1 + songsPlaylist.size) % songsPlaylist.size
             plParam.play()
         },
             colors = ButtonDefaults.buttonColors(
@@ -118,20 +125,26 @@ fun Controls(modifier: Modifier = padModifier(), plParam: Player) {
             shape = CircleShape) {
             Icon(imageVector = Icons.Default.ArrowBack, contentDescription = null)
         }
-        IconButton(onClick = mainOnClick) {
-            Icon(imageVector = mainIcon,
+        IconButton(onClick = {
+            hardCodedIsPlayingVar = !hardCodedIsPlayingVar
+            mainOnClick.invoke()
+        },
+            modifier = Modifier.background(Color.White, shape = CircleShape)) {
+            Icon(
+                imageVector = mainIcon,
                 contentDescription = null,
-                modifier = Modifier.size(48.dp))
+                modifier = padModifier()
+            )
         }
         Button(onClick = {
             plParam.stop()
-            index = (index + 1) % songsPlaylist.size // Update index to the next song
-            plParam.play() // Play the next song
+            index = (index + 1) % songsPlaylist.size
+            plParam.play()
         }, colors =
         ButtonDefaults.buttonColors(
             contentColor = Color.White,
-            containerColor = Color.Transparent
-        ),
+            containerColor = Color.Transparent),
+            enabled = index != songsPlaylist.size,
             shape = CircleShape) {
             Icon(imageVector = Icons.Default.ArrowForward, contentDescription = null)
         }
