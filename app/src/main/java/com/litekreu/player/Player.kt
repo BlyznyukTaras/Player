@@ -4,12 +4,12 @@ import android.content.Context
 import android.media.MediaPlayer
 import androidx.annotation.RawRes
 
-class Player(private val context: Context, @RawRes val songsList: List<Int>, var id: Int) {
+class Player(private val context: Context) {
     var player: MediaPlayer? = null
-    fun play() {
+    fun play(@RawRes song: Int) {
         if (player != null && !player!!.isPlaying) player!!.start()
         else {
-            MediaPlayer.create(context, songsList[index]).apply {
+            MediaPlayer.create(context, song).apply {
                 player = this
                 start()
             }
